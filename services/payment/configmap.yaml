@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-config
+  namespace: payment-service-ns
+data:
+  PAYMENT_CLIENT_URL: "https://www.random.org"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+  LIQUIBASE_MONGODB_URL: "mongodb://mongodb:27017/payments"
+  KAFKA_PAYMENT_TOPIC_NAME: "payment-events"
+  KAFKA_ORDER_TOPIC_NAME: "order-events"
+  SPRING_PROFILES_ACTIVE: "docker"
