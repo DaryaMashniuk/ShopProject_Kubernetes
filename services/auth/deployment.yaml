@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: auth-deployment
   labels:
-    app: authrservice
+    app: authservice
 spec:
   replicas: 1
   selector:

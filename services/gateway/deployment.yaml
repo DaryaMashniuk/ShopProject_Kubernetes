@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: gatewayservice
-          image: daryamashnyuk/orderservice:latest
+          image: daryamashnyuk/apigateway-service:latest
           imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8083

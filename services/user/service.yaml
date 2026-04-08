@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: user-service
-  namespace: user-service-ns
+  namespace: app-service-ns
 spec:
   selector:
     app: userservice
