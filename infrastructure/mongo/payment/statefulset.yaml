@@ -24,30 +24,36 @@ spec:
           
           envFrom:
             - secretRef:
-              name: payment-mongo-secret
+                name: payment-mongo-secret
           
           volumeMounts:
             - name: payment-mongo-storage
               mountPath: /data/db
 
           livenessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - db.adminCommand('ping')
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 60
+            periodSeconds: 10
 
           readinessProbe:
             exec:
               command:
-                - mongosh
-                - --eval
-                - db.adminCommand('ping')
+                - sh
+                - -c
+                - >
+                  mongosh "mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@localhost:27017/admin"
+                  --eval "db.runCommand({ ping: 1 })"
+                  --quiet
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            timeoutSeconds: 10
 
   volumeClaimTemplates:
     - metadata:
         name: payment-mongo-storage
       spec:
+        storageClassName: standard
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:

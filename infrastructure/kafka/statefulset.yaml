@@ -25,7 +25,7 @@ spec:
           
           envFrom:
             - configMapRef:
-              name: kafka-config
+                name: kafka-config
           
           volumeMounts:
             - name: kafka-storage

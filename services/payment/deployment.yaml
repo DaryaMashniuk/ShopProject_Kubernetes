@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: payment-deployment
+  namespace: app-service-ns
   labels:
     app: paymentservice
 spec:
@@ -21,22 +22,31 @@ spec:
           ports:
           - containerPort: 8084
 
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
+
           envFrom:
             - configMapRef:
-              name: payment-config
+                name: payment-config
             - secretRef:
-              name: payment-service-secret
+                name: payment-service-secret
 
           livenessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8084
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 150
+            periodSeconds: 20
 
           readinessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8084
-            initialDelaySeconds: 10
-            periodSeconds: 5
+            initialDelaySeconds: 120
+            periodSeconds: 10
+
+          resources:
+            requests:
+              memory: "400Mi"
+              cpu: "100m"
+            limits:
+              memory: "800Mi"

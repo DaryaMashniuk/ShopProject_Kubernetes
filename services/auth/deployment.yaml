@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-deployment
+  namespace: app-service-ns
   labels:
     app: authservice
 spec:
@@ -21,22 +22,33 @@ spec:
           ports:
           - containerPort: 8082
 
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
+
           envFrom:
             - configMapRef:
-              name: auth-config
+                name: auth-config
             - secretRef:
-              name: auth-service-secret
-
+                name: auth-service-secret
+          
           livenessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8082
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 150
+            periodSeconds: 20
+            failureThreshold: 5  
 
           readinessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8082
-            initialDelaySeconds: 10
+            initialDelaySeconds: 120
+            periodSeconds: 10
             periodSeconds: 5
+
+          resources:
+            requests:
+              memory: "400Mi"
+              cpu: "200m"
+            limits:
+              memory: "800Mi"

@@ -10,23 +10,41 @@ spec:
   selector:
     matchLabels:
       app: redis
-  
+
   template:
     metadata:
       labels:
         app: redis
+
     spec:
       containers:
         - name: redis
           image: redis:7
+
           args: ["redis-server", "--save", "60", "1"]
+
           ports:
             - containerPort: 6379
-          
+
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
           volumeMounts:
             - name: redis-storage
               mountPath: /data
-
 
   volumeClaimTemplates:
     - metadata:

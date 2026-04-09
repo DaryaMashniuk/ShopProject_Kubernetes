@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-deployment
+  namespace: app-service-ns
   labels:
     app: userservice
 spec:
@@ -22,6 +23,19 @@ spec:
           - containerPort: 8081
 
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
+            - name: DB_HOST
+              value: user-postgres-service
+
+            - name: DB_PORT
+              value: "5432"
+
+            - name: DB_NAME
+              value: userdb
+
+            - name: DB_USERNAME
+              value: user
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
@@ -57,16 +71,30 @@ spec:
                 configMapKeyRef:
                   name: user-config
                   key: SPRING_PROFILES_ACTIVE
+            - name: LOGGING_LEVEL_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: LOGGING_LEVEL_ROOT
+            - name: LOGGING_LEVEL_ORG_HIBERNATE
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: LOGGING_LEVEL_ORG_HIBERNATE
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+
           livenessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8081
-            initialDelaySeconds: 30
+            initialDelaySeconds: 100
             periodSeconds: 10
 
           readinessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8081
-            initialDelaySeconds: 10
+            initialDelaySeconds: 70
             periodSeconds: 5

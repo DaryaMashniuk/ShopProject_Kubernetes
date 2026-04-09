@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-deployment
+  namespace: app-service-ns
   labels:
     app: orderservice
 spec:
@@ -20,23 +21,30 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
           - containerPort: 8080
-
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
           envFrom:
             - configMapRef:
-              name: order-config
+                name: order-config
             - secretRef:
-              name: order-service-secret
+                name: order-service-secret
 
           livenessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8080
-            initialDelaySeconds: 30
+            initialDelaySeconds: 120
             periodSeconds: 10
 
           readinessProbe:
-            httpGet:
-              path: /actuator/health
+            tcpSocket:
               port: 8080
-            initialDelaySeconds: 10
+            initialDelaySeconds: 100
             periodSeconds: 5
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "800Mi"

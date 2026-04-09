@@ -10,4 +10,6 @@ data:
   PAYMENTSERVICE_URL: "http://payment-service:8084"
   AUTHSERVICE_WHITELIST: "/api/v1/auth/login,/api/v1/auth/register,/api/v1/auth/refresh"
   SPRING_PROFILES_ACTIVE: "docker"
-
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_ORG_HIBERNATE: "INFO"
+  LOGGING_LEVEL_LIQUIBASE: "INFO"
