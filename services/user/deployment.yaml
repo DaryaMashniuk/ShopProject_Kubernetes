@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-deployment
+  namespace: app-service-ns
+  labels:
+    app: userservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userservice
+  template:
+    metadata:
+      labels:
+        app: userservice
+    spec:
+      containers:
+        - name: userservice
+          image: daryamashnyuk/userservice:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 8081
+
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
+            - name: DB_HOST
+              value: user-postgres-service
+
+            - name: DB_PORT
+              value: "5432"
+
+            - name: DB_NAME
+              value: userdb
+
+            - name: DB_USERNAME
+              value: user
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: SPRING_DATASOURCE_URL
+            
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_USER
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secret
+                  key: POSTGRES_PASSWORD
+
+            - name: SPRING_DATA_REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: REDIS_HOST
+
+            - name: SPRING_DATA_REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: REDIS_PORT
+
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: LOGGING_LEVEL_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: LOGGING_LEVEL_ROOT
+            - name: LOGGING_LEVEL_ORG_HIBERNATE
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: LOGGING_LEVEL_ORG_HIBERNATE
+            - name: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+              valueFrom:
+                configMapKeyRef:
+                  name: user-config
+                  key: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+
+          livenessProbe:
+            httpGet:
+              path: /userservice/actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 100
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /userservice/actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 70
+            periodSeconds: 5
+
+          resources:
+            requests:
+              memory: "400Mi"
+              cpu: "200m"
+            limits:
+              memory: "800Mi"

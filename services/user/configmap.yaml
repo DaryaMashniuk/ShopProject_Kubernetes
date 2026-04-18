@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-config
+  namespace: app-service-ns
+data:
+  DB_NAME: userdb
+  DB_HOST: user-db
+  DB_PORT: "5432"
+  REDIS_HOST: redis-service
+  REDIS_PORT: "6379"
+  SPRING_PROFILES_ACTIVE: docker
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_ORG_HIBERNATE: "INFO"
+  LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: "INFO"

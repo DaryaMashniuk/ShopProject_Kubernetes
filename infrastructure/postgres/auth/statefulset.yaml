@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: auth-postgres
+  namespace: app-service-ns
+spec:
+  serviceName: auth-postgres
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: auth-postgres
+  
+  template:
+    metadata:
+      labels:
+        app: auth-postgres
+    spec:
+      containers:
+        - name: auth-postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          
+          envFrom:
+            - secretRef:
+                name: auth-postgres-secret
+          
+          volumeMounts:
+            - name: auth-postgres-storage
+              mountPath: /var/lib/postgresql/data
+
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+
+  volumeClaimTemplates:
+    - metadata:
+        name: auth-postgres-storage
+      spec:
+        storageClassName: standard
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

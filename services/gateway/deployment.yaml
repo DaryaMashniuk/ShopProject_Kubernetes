@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment
+  namespace: app-service-ns
+  labels:
+    app: gatewayservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gatewayservice
+  template:
+    metadata:
+      labels:
+        app: gatewayservice
+    spec:
+      containers:
+        - name: gatewayservice
+          image: daryamashnyuk/apigateway-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 8083
+
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
+
+          envFrom:
+            - configMapRef:
+                name: gateway-config
+            - secretRef:
+                name: gateway-service-secret
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 150
+            periodSeconds: 20
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            initialDelaySeconds: 120
+            periodSeconds: 10
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "800Mi"

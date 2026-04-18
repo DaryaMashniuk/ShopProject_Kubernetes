@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: payment-mongo
+  namespace: app-service-ns
+spec:
+  serviceName: payment-mongo
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: payment-mongo
+  
+  template:
+    metadata:
+      labels:
+        app:  payment-mongo
+    spec:
+      containers:
+        - name: payment-mongo
+          image: mongo:7.0
+          ports:
+            - containerPort: 27017
+          
+          envFrom:
+            - secretRef:
+                name: payment-mongo-secret
+          
+          volumeMounts:
+            - name: payment-mongo-storage
+              mountPath: /data/db
+
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 60
+            periodSeconds: 10
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >
+                  mongosh "mongodb://$MONGO_INITDB_ROOT_USERNAME:$MONGO_INITDB_ROOT_PASSWORD@localhost:27017/admin"
+                  --eval "db.runCommand({ ping: 1 })"
+                  --quiet
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            timeoutSeconds: 10
+
+  volumeClaimTemplates:
+    - metadata:
+        name: payment-mongo-storage
+      spec:
+        storageClassName: standard
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
