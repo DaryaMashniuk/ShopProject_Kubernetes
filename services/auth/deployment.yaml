@@ -33,18 +33,20 @@ spec:
                 name: auth-service-secret
           
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/liveness
               port: 8082
             initialDelaySeconds: 150
             periodSeconds: 20
-            failureThreshold: 5  
+            failureThreshold: 5
 
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/readiness
               port: 8082
             initialDelaySeconds: 120
             periodSeconds: 10
-            periodSeconds: 5
+
 
           resources:
             requests:

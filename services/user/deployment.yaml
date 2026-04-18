@@ -88,13 +88,22 @@ spec:
                   key: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
 
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /userservice/actuator/health/liveness
               port: 8081
             initialDelaySeconds: 100
             periodSeconds: 10
 
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /userservice/actuator/health/readiness
               port: 8081
             initialDelaySeconds: 70
             periodSeconds: 5
+
+          resources:
+            requests:
+              memory: "400Mi"
+              cpu: "200m"
+            limits:
+              memory: "800Mi"

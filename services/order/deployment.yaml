@@ -22,6 +22,10 @@ spec:
           ports:
           - containerPort: 8080
           env:
+            - name: SPRING_LIQUIBASE_ENABLED
+              value: "true"
+            - name: SPRING_LIQUIBASE_LAZY_INITIALIZATION
+              value: "false"
             - name: JAVA_TOOL_OPTIONS
               value: "-Xmx300M -Xms200M -XX:+UseSerialGC -Dspring.main.lazy-initialization=true"
           envFrom:
@@ -31,13 +35,15 @@ spec:
                 name: order-service-secret
 
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/liveness
               port: 8080
             initialDelaySeconds: 120
             periodSeconds: 10
 
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/readiness
               port: 8080
             initialDelaySeconds: 100
             periodSeconds: 5

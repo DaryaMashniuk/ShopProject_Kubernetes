@@ -33,13 +33,15 @@ spec:
                 name: gateway-service-secret
 
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/liveness
               port: 8083
             initialDelaySeconds: 150
             periodSeconds: 20
 
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/readiness
               port: 8083
             initialDelaySeconds: 120
             periodSeconds: 10
